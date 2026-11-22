@@ -1,7 +1,6 @@
 {
   "name": "@tetherto/mdk-app-operation-center",
-  "version": "0.13.0",
-  "private": true,
+  "version": "0.14.0",
   "description": "Operation Center: a single-site operations app for MDK (Gateway plugin + dashboard UI).",
   "keywords": [
     "mdk",
@@ -30,13 +29,16 @@
     "fmt": "ui-src/node_modules/.bin/oxfmt -c .oxfmtrc.json .",
     "fmt:check": "ui-src/node_modules/.bin/oxfmt -c .oxfmtrc.json --check .",
     "test": "npm --prefix ui-src run test",
-    "test:coverage": "npm --prefix ui-src run test:coverage",
     "check": "npm run fmt:check && npm run lint && npm run typecheck && npm run test && npm --prefix ui-src run gen:routes:check && npm run build:ui && npm run validate",
     "gen:routes": "npm --prefix ui-src run gen:routes"
   },
+  "dependencies": {
+    "corestore": "^7.16.1",
+    "hyperbee": "^2.27.3"
+  },
   "devDependencies": {
-    "@tetherto/mdk-app-runtime": "0.13.0",
-    "@tetherto/mdk-cli": "0.13.0"
+    "@tetherto/mdk-app-runtime": "0.14.0",
+    "@tetherto/mdk-cli": "0.14.0"
   },
   "engines": {
     "node": ">=24"
