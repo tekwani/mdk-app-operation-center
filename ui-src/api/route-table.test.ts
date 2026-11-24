@@ -65,45 +65,49 @@ describe("ROUTE_TABLE", () => {
   });
 
   it("points every route at a controller the plugin has", () => {
-    for (const route of ROUTE_TABLE) {
-      expect(existsSync(`${appRoot}plugin/controllers/${route.handler}.js`), route.handler).toBe(
-        true,
-      );
-    }
+    const missing = ROUTE_TABLE.map((route) => route.handler).filter(
+      (handler) => !existsSync(`${appRoot}plugin/controllers/${handler}.js`),
+    );
+    expect(missing).toEqual([]);
   });
 
   it("declares a path schema with exactly the path's parameters", () => {
-    for (const route of ROUTE_TABLE) {
-      const declared = Object.keys(route.pathParams?.shape ?? {});
-      expect(declared, route.id).toEqual(pathParamsOf(route.path));
-    }
+    const declared = ROUTE_TABLE.map((route) => [
+      route.id,
+      Object.keys(route.pathParams?.shape ?? {}),
+    ]);
+    const expected = ROUTE_TABLE.map((route) => [route.id, pathParamsOf(route.path)]);
+    expect(declared).toEqual(expected);
   });
 
   it("guards writes: POST, signed in, a body, and the commands-off error", () => {
-    for (const route of ROUTE_TABLE) {
+    const unguarded = ROUTE_TABLE.filter((route) => {
       const write = route.safety === "write";
-      expect(route.method === "POST", route.id).toBe(write);
-      if (!write) continue;
-      expect(route.auth, route.id).toBe(true);
-      expect(route.body, route.id).toBeDefined();
-      expect(route.errors, route.id).toHaveProperty("ERR_COMMANDS_DISABLED");
-    }
+      if ((route.method === "POST") !== write) return true;
+      if (!write) return false;
+      return (
+        route.auth !== true ||
+        route.body === undefined ||
+        route.errors?.ERR_COMMANDS_DISABLED === undefined
+      );
+    }).map((route) => route.id);
+    expect(unguarded).toEqual([]);
   });
 
   it("names every error code in SCREAMING_SNAKE with its status", () => {
-    for (const route of ROUTE_TABLE) {
-      for (const [code, text] of Object.entries(route.errors ?? {})) {
-        expect(code, route.id).toMatch(ERROR_CODE);
-        expect(text, `${route.id} ${code}`).toMatch(ERROR_TEXT);
-      }
-    }
+    const malformed = ROUTE_TABLE.flatMap((route) =>
+      Object.entries(route.errors ?? {})
+        .filter(([code, text]) => !ERROR_CODE.test(code) || !ERROR_TEXT.test(text))
+        .map(([code]) => `${route.id} ${code}`),
+    );
+    expect(malformed).toEqual([]);
   });
 
   it("gives JSON routes a response schema and stream routes a content type", () => {
-    for (const route of ROUTE_TABLE) {
-      if (route.stream === true) expect(route.contentType, route.id).not.toBe("");
-      else expect(route.response, route.id).toBeDefined();
-    }
+    const incomplete = ROUTE_TABLE.filter((route) =>
+      route.stream === true ? route.contentType === "" : route.response === undefined,
+    ).map((route) => route.id);
+    expect(incomplete).toEqual([]);
   });
 });
 
@@ -153,9 +157,7 @@ describe("toPluginManifest", () => {
   });
 
   it("matches the committed plugin/mdk-plugin.json", () => {
-    const committed: unknown = JSON.parse(
-      readFileSync(`${appRoot}plugin/mdk-plugin.json`, "utf8"),
-    );
+    const committed: unknown = JSON.parse(readFileSync(`${appRoot}plugin/mdk-plugin.json`, "utf8"));
     const pkg = z
       .object({ name: z.string(), version: z.string() })
       .parse(JSON.parse(readFileSync(`${appRoot}package.json`, "utf8")));

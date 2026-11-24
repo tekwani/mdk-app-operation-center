@@ -9,10 +9,10 @@ import { PowerCommandControls } from "./power-command-controls";
 import { COMMANDS_OFF_MESSAGE } from "./power-commands";
 
 const notifications = vi.hoisted(() => ({
-  notifySuccess: vi.fn(),
-  notifyInfo: vi.fn(),
-  notifyWarning: vi.fn(),
-  notifyError: vi.fn(),
+  notifySuccess: vi.fn<(...args: unknown[]) => void>(),
+  notifyInfo: vi.fn<(...args: unknown[]) => void>(),
+  notifyWarning: vi.fn<(...args: unknown[]) => void>(),
+  notifyError: vi.fn<(...args: unknown[]) => void>(),
 }));
 
 vi.mock("@tetherto/mdk-react-devkit", async (importOriginal) => {

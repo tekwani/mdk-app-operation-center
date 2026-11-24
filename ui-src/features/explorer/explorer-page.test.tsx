@@ -9,7 +9,9 @@ import { createFakeGateway, type FakeRequest } from "../../test-utils/fake-gatew
 import { renderWithApp } from "../../test-utils/render";
 import { ExplorerPage } from "./explorer-page";
 
-vi.mock("../../lib/save-file", () => ({ saveFile: vi.fn() }));
+vi.mock("../../lib/save-file", () => ({
+  saveFile: vi.fn<(fileName: string, blob: Blob) => void>(),
+}));
 
 /** Shows where the router is, so a row click's navigation can be checked. */
 const LocationProbe = () => {
@@ -267,7 +269,9 @@ describe("ExplorerPage", () => {
     expect(others).toHaveLength(0);
     expect(file?.fileName).toBe("racks.csv");
     const lines = file?.text.split("\r\n") ?? [];
-    expect(lines[0]).toMatch(/^Rack,Container,Efficiency \(.+\),Hash rate \(.+\),Consumption \(.+\)$/);
+    expect(lines[0]).toMatch(
+      /^Rack,Container,Efficiency \(.+\),Hash rate \(.+\),Consumption \(.+\)$/,
+    );
     expect(lines.slice(1).map((line) => line.split(",").slice(0, 2).join(","))).toEqual([
       "Rack 4-1,Container 4",
       "Rack 4-2,Container 4",

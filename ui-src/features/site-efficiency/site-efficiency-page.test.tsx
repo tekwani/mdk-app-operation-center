@@ -62,16 +62,18 @@ describe("SiteEfficiencyPage", () => {
       "Total consumption1.000MW",
     ]);
 
-    const cards = [...container.querySelectorAll(".op-centre-lite-meter-card")];
+    const cards = [...container.querySelectorAll<HTMLElement>(".op-centre-lite-meter-card")];
     expect(cards).toHaveLength(2);
+    const [first, second] = cards;
+    if (first === undefined || second === undefined) throw new Error("no meter cards");
     // Containers are named once the shared containers read loads.
-    await waitFor(() => expect(within(cards[0]).getByText("Container 1")).toBeTruthy());
-    expect(within(cards[0]).getByText("20.00")).toBeTruthy();
-    expect(within(cards[0]).getByText("72")).toBeTruthy();
+    await waitFor(() => expect(within(first).getByText("Container 1")).toBeTruthy());
+    expect(within(first).getByText("20.00")).toBeTruthy();
+    expect(within(first).getByText("72")).toBeTruthy();
     // A meter whose miners hash nothing has no efficiency.
-    expect(
-      cards[1].querySelector(".op-centre-lite-meter-card__efficiency-value")?.textContent,
-    ).toBe("-W/TH");
+    expect(second.querySelector(".op-centre-lite-meter-card__efficiency-value")?.textContent).toBe(
+      "-W/TH",
+    );
 
     const bar = screen.getByRole("img", { name: "Share of consumption per meter" });
     const segments = [...bar.querySelectorAll(".op-centre-lite-breakdown__segment")];

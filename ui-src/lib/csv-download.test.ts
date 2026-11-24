@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { downloadCsv } from "./csv";
 import { saveFile } from "./save-file";
 
-vi.mock("./save-file", () => ({ saveFile: vi.fn() }));
+vi.mock("./save-file", () => ({ saveFile: vi.fn<(fileName: string, blob: Blob) => void>() }));
 
 afterEach(() => {
   vi.mocked(saveFile).mockReset();

@@ -2,14 +2,14 @@
 import type { IChartApi, LineChartCardData } from "@tetherto/mdk-react-devkit";
 import { renderHook } from "@testing-library/react";
 import type { MutableRefObject } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, type Mock, vi } from "vitest";
 
 import { useAreaFill } from "./use-area-fill";
 
-type FakeSeries = { setData: ReturnType<typeof vi.fn> };
+type FakeSeries = { setData: Mock<(data: unknown) => void> };
 type FakeChart = {
-  addAreaSeries: ReturnType<typeof vi.fn<() => FakeSeries>>;
-  removeSeries: ReturnType<typeof vi.fn>;
+  addAreaSeries: Mock<() => FakeSeries>;
+  removeSeries: Mock<(series: FakeSeries) => void>;
 };
 
 // The hook calls only `addAreaSeries` and `removeSeries` on the chart.
@@ -19,12 +19,12 @@ const isChart = (value: object): value is IChartApi =>
 const createChart = () => {
   const series: FakeSeries[] = [];
   const fake: FakeChart = {
-    addAreaSeries: vi.fn(() => {
-      const added = { setData: vi.fn() };
+    addAreaSeries: vi.fn<() => FakeSeries>(() => {
+      const added = { setData: vi.fn<(data: unknown) => void>() };
       series.push(added);
       return added;
     }),
-    removeSeries: vi.fn(),
+    removeSeries: vi.fn<(series: FakeSeries) => void>(),
   };
   if (!isChart(fake)) throw new Error("not a chart");
   const chart: IChartApi = fake;
@@ -42,8 +42,10 @@ type Props = {
   enabled: boolean;
 };
 const render = (initialProps: Props) =>
-  renderHook(({ chartRef, ready, data, enabled }: Props) =>
-    useAreaFill(chartRef, ready, data, enabled), { initialProps });
+  renderHook(
+    ({ chartRef, ready, data, enabled }: Props) => useAreaFill(chartRef, ready, data, enabled),
+    { initialProps },
+  );
 
 describe("useAreaFill", () => {
   it("adds one area series under the line, with the points in seconds and gaps kept", () => {

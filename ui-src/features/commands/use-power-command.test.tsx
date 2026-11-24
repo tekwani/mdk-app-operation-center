@@ -9,10 +9,10 @@ import { COMMANDS_OFF_MESSAGE } from "./power-commands";
 import { usePowerCommand } from "./use-power-command";
 
 const notifications = vi.hoisted(() => ({
-  notifySuccess: vi.fn(),
-  notifyInfo: vi.fn(),
-  notifyWarning: vi.fn(),
-  notifyError: vi.fn(),
+  notifySuccess: vi.fn<(...args: unknown[]) => void>(),
+  notifyInfo: vi.fn<(...args: unknown[]) => void>(),
+  notifyWarning: vi.fn<(...args: unknown[]) => void>(),
+  notifyError: vi.fn<(...args: unknown[]) => void>(),
 }));
 
 // Only the toast hook is replaced: the toasts' store is the dashboard's, not the app's.
@@ -135,13 +135,21 @@ describe("usePowerCommand", () => {
       const { invalidate } = await sendAndSettle();
       expect(invalidate).toHaveBeenLastCalledWith({ queryKey: LIVE_QUERY_KEY });
 
-      act(() => vi.advanceTimersByTime(3_000));
+      act(() => {
+        vi.advanceTimersByTime(3_000);
+      });
       expect(invalidate).toHaveBeenCalledTimes(2);
-      act(() => vi.advanceTimersByTime(3_000));
+      act(() => {
+        vi.advanceTimersByTime(3_000);
+      });
       expect(invalidate).toHaveBeenCalledTimes(3);
-      act(() => vi.advanceTimersByTime(3_000));
+      act(() => {
+        vi.advanceTimersByTime(3_000);
+      });
       expect(invalidate).toHaveBeenCalledTimes(4);
-      act(() => vi.advanceTimersByTime(30_000));
+      act(() => {
+        vi.advanceTimersByTime(30_000);
+      });
       expect(invalidate).toHaveBeenCalledTimes(4);
     });
 
@@ -156,14 +164,20 @@ describe("usePowerCommand", () => {
 
     it("replaces the pending refetches when a new command goes out", async () => {
       const { invalidate, result } = await sendAndSettle();
-      act(() => vi.advanceTimersByTime(2_000));
+      act(() => {
+        vi.advanceTimersByTime(2_000);
+      });
 
       act(() => result.current.send({ kind: "pct", pct: 90 }));
       await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(2));
       // The first command's 3 s refetch (1 s away) was dropped: the next is the new one's.
-      act(() => vi.advanceTimersByTime(2_500));
+      act(() => {
+        vi.advanceTimersByTime(2_500);
+      });
       expect(invalidate).toHaveBeenCalledTimes(2);
-      act(() => vi.advanceTimersByTime(500));
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
       expect(invalidate).toHaveBeenCalledTimes(3);
     });
   });

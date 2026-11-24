@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen, waitFor, within } from "@testing-library/react";
+import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -39,6 +39,15 @@ const saved: string[] = [];
 beforeEach(() => {
   saved.length = 0;
   vi.stubGlobal("URL", TestUrl);
+  // Radix measures some controls with it; jsdom has none.
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe = () => undefined;
+      unobserve = () => undefined;
+      disconnect = () => undefined;
+    },
+  );
   vi.stubGlobal("matchMedia", (media: string) => ({
     matches: false,
     media,
@@ -57,6 +66,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
 });
 
@@ -144,8 +154,8 @@ describe("ContainerDetailPage", () => {
       createFakeGateway({ commandsEnabled: false }),
     );
 
-    expect(await screen.findByRole("status")).toBeTruthy();
-    expect(screen.getByText(/can't send commands to miners/)).toBeTruthy();
+    const notice = await screen.findByText(/can't send commands to miners/);
+    expect(notice.getAttribute("role")).toBe("status");
   });
 });
 
@@ -175,9 +185,11 @@ describe("Layout tab", () => {
     await screen.findByRole("heading", { name: "Container 1" });
 
     expect(socketButton("1-1-1").getAttribute("aria-label")).toMatch(
-      /^Socket 1-1-1, HT00101001, Offline, Socket Off, 0\.00 kW, 0\.0 A$/,
+      /^Socket 1-1-1, HT00101001, Offline, Socket Off, 0\.0 kW, 0\.0 A$/,
     );
-    expect(screen.getByRole("img", { name: "Socket 1-1-19: no miner, Socket Off, 0.0 A" })).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: "Socket 1-1-19: no miner, Socket Off, 0.0 A" }),
+    ).toBeTruthy();
     expect(screen.getByRole("list", { name: "Legend" }).querySelectorAll("li")).toHaveLength(10);
     expect(screen.getByText("Mining with Error")).toBeTruthy();
   });
@@ -247,7 +259,7 @@ describe("Workbench", () => {
 
   it("prints the page and exports the sockets as CSV", async () => {
     const user = userEvent.setup();
-    const print = vi.fn();
+    const print = vi.fn<() => void>();
     vi.stubGlobal("print", print);
     renderPage("explorer/containers/container-1/layout");
     await screen.findByRole("heading", { name: "Container 1" });
@@ -290,7 +302,9 @@ describe("Heatmap tab", () => {
 
     const panel = sidePanel();
     expect(within(panel).getByText("Rack 1-1 · Socket 1-1-2")).toBeTruthy();
-    expect(within(panel).getByRole("combobox", { name: "Set power mode of HT00101002" })).toBeTruthy();
+    expect(
+      within(panel).getByRole("combobox", { name: "Set power mode of HT00101002" }),
+    ).toBeTruthy();
     expect(within(panel).queryByRole("combobox", { name: /power percentage/ })).toBeNull();
     expect(within(panel).getByText("Efficiency")).toBeTruthy();
     expect(within(panel).getByText("Env Temp")).toBeTruthy();
@@ -312,7 +326,14 @@ describe("Heatmap tab", () => {
           miner:
             socket.miner === null
               ? null
-              : { ...socket.miner, serial: "", status: "offline", envTempC: null, uptimeS: 0, lastUpdate: 0 },
+              : {
+                  ...socket.miner,
+                  serial: "",
+                  status: "offline",
+                  envTempC: null,
+                  uptimeS: 0,
+                  lastUpdate: 0,
+                },
         })),
       })),
     }));

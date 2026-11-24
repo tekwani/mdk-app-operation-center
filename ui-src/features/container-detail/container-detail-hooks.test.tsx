@@ -282,9 +282,7 @@ describe("useMinerLogsDownload", () => {
 
     act(() => result.current.download(MINING));
 
-    expect(
-      await screen.findByText(`Could not download the logs of ${MINING.serial}`),
-    ).toBeTruthy();
+    expect(await screen.findByText(`Could not download the logs of ${MINING.serial}`)).toBeTruthy();
     await waitFor(() => expect(result.current.isDownloading(MINING.id)).toBe(false));
     expect(saved).toEqual([]);
   });
@@ -318,7 +316,9 @@ describe("useContainerCharts", () => {
     await waitFor(() => expect(result.current.hashrate.view.status).toBe("ready"));
     await waitFor(() => expect(result.current.power.view.status).toBe("ready"));
     const reads = gateway.requests.filter((r) => r.path === "/api/history");
-    expect(reads.map((r) => r.query.get("metric")).sort()).toEqual(["hashrate", "power"]);
+    expect(
+      reads.map((r) => r.query.get("metric") ?? "").sort((a, b) => a.localeCompare(b)),
+    ).toEqual(["hashrate", "power"]);
     expect(reads.every((r) => r.query.get("containerId") === "container-1")).toBe(true);
     expect(reads.every((r) => !r.query.has("rackId"))).toBe(true);
   });
@@ -362,7 +362,9 @@ describe("useContainerCharts", () => {
       const { result } = renderHookWithApp(() => useContainerCharts(LAYOUT));
       expect(result.current.range.to?.getDate()).toBe(20);
 
-      act(() => vi.advanceTimersByTime(4000));
+      act(() => {
+        vi.advanceTimersByTime(4000);
+      });
 
       expect(result.current.range.to?.getDate()).toBe(21);
       expect(result.current.range.from?.getDate()).toBe(15);

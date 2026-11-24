@@ -30,8 +30,9 @@ describe("the app's UI module", () => {
 
   it("registers every page path once, with the detail page as a hidden deep link", () => {
     const routes = app.routes ?? [];
-    expect(routes.map((route) => route.path).toSorted()).toEqual(
-      Object.values(APP_PATHS).toSorted(),
+    const byName = (a: string, b: string) => a.localeCompare(b);
+    expect(routes.map((route) => route.path).sort(byName)).toEqual(
+      Object.values(APP_PATHS).sort(byName),
     );
     expect(routes.find((route) => route.path === APP_PATHS.DASHBOARD)?.component).toBe(
       DashboardPage,
@@ -39,10 +40,10 @@ describe("the app's UI module", () => {
     const detail = routes.find((route) => route.path === APP_PATHS.CONTAINER_DETAIL);
     expect(detail?.component).toBe(ContainerDetailPage);
     expect(detail?.hidden).toBe(true);
-    for (const route of routes.filter((candidate) => candidate !== detail)) {
-      expect(route.hidden, route.path).not.toBe(true);
-      expect(route.label, route.path).toBeTruthy();
-    }
+    const unlisted = routes
+      .filter((route) => route !== detail && (route.hidden === true || !route.label))
+      .map((route) => route.path);
+    expect(unlisted).toEqual([]);
   });
 
   it("puts the site summary on Home", () => {

@@ -12,7 +12,7 @@ const DATA: LineChartCardData = {
 // Only `useLineChartData` reads the ref, and only to see whether it is set.
 const isChart = (value: object): value is IChartApi => "addAreaSeries" in value;
 const fakeChart = (): IChartApi => {
-  const chart = { addAreaSeries: vi.fn(), removeSeries: vi.fn() };
+  const chart = { addAreaSeries: vi.fn<() => void>(), removeSeries: vi.fn<() => void>() };
   if (!isChart(chart)) throw new Error("not a chart");
   return chart;
 };

@@ -24,12 +24,18 @@ describe("useDebouncedValue", () => {
     });
 
     rerender({ value: "ab" });
-    act(() => vi.advanceTimersByTime(200));
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     rerender({ value: "abc" });
-    act(() => vi.advanceTimersByTime(200));
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     expect(result.current).toBe("a");
 
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(result.current).toBe("abc");
   });
 

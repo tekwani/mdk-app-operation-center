@@ -130,7 +130,9 @@ describe("SiteOverviewPage", () => {
 
     await user.click(trigger);
     await user.click(await screen.findByRole("option", { name: "Low" }));
-    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Cancel" }));
+    await user.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Cancel" }),
+    );
     const controls = container.querySelector(".op-centre-lite-container-card__controls");
     if (!(controls instanceof HTMLElement)) throw new Error("no controls");
     await user.click(controls);

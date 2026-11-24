@@ -6,8 +6,8 @@ import { saveFile } from "./save-file";
 const BLOB_URL = "blob:http://localhost/file";
 
 describe("saveFile", () => {
-  const createObjectURL = vi.fn((_blob: Blob) => BLOB_URL);
-  const revokeObjectURL = vi.fn((_url: string) => undefined);
+  const createObjectURL = vi.fn<(blob: Blob) => string>(() => BLOB_URL);
+  const revokeObjectURL = vi.fn<(url: string) => void>(() => undefined);
 
   beforeEach(() => {
     vi.useFakeTimers();
